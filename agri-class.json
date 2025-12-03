@@ -1,0 +1,118 @@
+{
+  "name": "agri-class",
+  "nodes": [
+    {
+      "parameters": {
+        "topics": "sensors/dht22",
+        "options": {
+          "jsonParseBody": true,
+          "onlyMessage": false
+        }
+      },
+      "type": "n8n-nodes-base.mqttTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7937a0d3-4268-41ff-b84c-66c69aab0d02",
+      "name": "MQTT Trigger",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mqtt": {
+          "id": "YI8XInYOKfEkmYyO",
+          "name": "MQTT account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "python",
+        "pythonCode": "item = _input.first()\ndata = item.json\n\n# Handle nested message\nif 'message' in data:\n    sensor_data = data['message']\nelse:\n    sensor_data = data\n\nfrom datetime import datetime\n\n# Parse timestamp\nts = sensor_data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))\ndt = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')\ntimestamp_ns = int(dt.timestamp() * 1000000000)\n\n# Create InfluxDB Line Protocol\nline = 'dht22,sensor={},location={} temperature={},humidity={} {}'.format(\n    sensor_data.get('sensor', 'DHT22'),\n    sensor_data.get('location', 'GPIO4'),\n    sensor_data.get('temperature', 0),\n    sensor_data.get('humidity', 0),\n    timestamp_ns\n)\n\nprint('Line Protocol:', line)\n\nreturn {'json': {'payload': line}}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9db010f0-fb0e-4e25-a629-1c3f67fc229b",
+      "name": "Code in Python (Beta)",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://influxdb:8086/api/v2/write?org=myorg&bucket=sensors&precision=ns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Token mytoken123456789"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{$json.payload}}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "976c54c9-c250-44f5-b84c-4b73fd4332d2",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "MQTT Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in Python (Beta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python (Beta)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "79035cdb-52ae-4902-9b1a-d1d98d0de045",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2f87392c347070a03a16e8e9575d79f9fdfe92f63af099102fb0a372120b8d6d"
+  },
+  "id": "1E5kK9vBIHUWWkqy",
+  "tags": []
+}
