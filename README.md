@@ -54,9 +54,8 @@ source ~/.venvs/agri_task/bin/activate
 ### 2. Install Python Dependencies
 
 ```bash
-pip install adafruit-circuitpython-dht
-pip install paho-mqtt
-pip install influxdb-client
+# Install all required packages from requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 3. Start Docker Services
@@ -124,6 +123,8 @@ The Python script reads DHT22 sensor and publishes JSON data:
 MQTT Trigger → Code (Python) → HTTP Request (InfluxDB)
 ```
 
+![n8n Workflow](images/n8n.png)
+
 **Code Node (Python):**
 - Parses MQTT message
 - Converts timestamp to nanoseconds
@@ -144,6 +145,8 @@ MQTT Trigger → Code (Python) → HTTP Request (InfluxDB)
 
 ### 4. Grafana Visualization
 
+![Grafana Dashboard](images/grafana.png)
+
 **Dashboards include:**
 - Time-series graph for temperature & humidity trends
 - Gauge for current temperature reading
@@ -151,6 +154,8 @@ MQTT Trigger → Code (Python) → HTTP Request (InfluxDB)
 - Real-time updates every 5 seconds
 
 ## 🔍 Querying Data
+
+![InfluxDB Data](images/influx.png)
 
 ### Using InfluxDB CLI
 
@@ -239,6 +244,7 @@ from(bucket: "sensors")
 ```
 2025_agri_task_class/
 ├── main.py                          # Main sensor reading script
+├── requirements.txt                 # Python dependencies
 ├── docker-compose.yml               # Docker services configuration
 ├── README.md                        # This documentation
 ├── README_DOCKER.md                 # Docker setup guide
