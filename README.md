@@ -98,6 +98,27 @@ The script will:
 | **n8n** | http://192.168.10.6:5678 | - |
 | **MQTT** | mqtt://192.168.10.6:1883 | No auth |
 
+### Importing Configuration
+
+**n8n Workflow:**
+```bash
+# Import workflow via UI:
+# 1. Open n8n at http://192.168.10.6:5678
+# 2. Click "Add workflow" → "Import from file"
+# 3. Select resources/n8n-agri-class.json
+# 4. Activate the workflow (toggle ON)
+```
+
+**Grafana Dashboard:**
+```bash
+# Import dashboard via UI:
+# 1. Open Grafana at http://192.168.10.6:3000
+# 2. Navigate to Dashboards → New → Import
+# 3. Upload resources/grafana-dashboard.json
+# 4. Select InfluxDB data source
+# 5. Click Import
+```
+
 ## 📊 Data Flow
 
 ### 1. Sensor Data Collection (Python)
@@ -248,6 +269,9 @@ from(bucket: "sensors")
 ├── docker-compose.yml               # Docker services configuration
 ├── README.md                        # This documentation
 ├── README_DOCKER.md                 # Docker setup guide
+├── resources/
+│   ├── n8n-agri-class.json         # n8n workflow export
+│   └── grafana-dashboard.json      # Grafana dashboard export
 ├── mosquitto/
 │   └── config/
 │       └── mosquitto.conf          # MQTT broker config
