@@ -75,6 +75,7 @@ docker compose ps
 
 ### Running the Sensor Script
 
+**Manual Execution:**
 ```bash
 # Activate virtual environment
 source ~/.venvs/agri_task/bin/activate
@@ -88,6 +89,82 @@ The script will:
 - Publish data to MQTT topic `sensors/dht22`
 - Display readings in console
 - Automatically send to n8n workflow
+
+### Auto-Start on Boot (systemd Service)
+
+For production deployment, configure the sensor script to auto-start on Raspberry Pi boot.
+
+**1. Create systemd service file:**
+
+```bash
+sudo nano /etc/systemd/system/agri-sensor.service
+```
+
+**2. Add service configuration:**
+
+```ini
+[Unit]
+Description=ICT Agri Sensor Monitoring Service
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=uwais
+Group=uwais
+WorkingDirectory=/home/uwais/Applications/2025_agri_task_class
+Environment="PATH=/home/uwais/.venvs/agri_task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/uwais/.venvs/agri_task/bin/python /home/uwais/Applications/2025_agri_task_class/main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**3. Enable and start service:**
+
+```bash
+# Reload systemd daemon
+sudo systemctl daemon-reload
+
+# Enable auto-start on boot
+sudo systemctl enable agri-sensor.service
+
+# Start service immediately
+sudo systemctl start agri-sensor.service
+
+# Check service status
+sudo systemctl status agri-sensor.service
+```
+
+**4. Service management commands:**
+
+```bash
+# View real-time logs
+sudo journalctl -u agri-sensor.service -f
+
+# View last 50 log lines
+sudo journalctl -u agri-sensor.service -n 50
+
+# Restart service
+sudo systemctl restart agri-sensor.service
+
+# Stop service
+sudo systemctl stop agri-sensor.service
+
+# Disable auto-start
+sudo systemctl disable agri-sensor.service
+```
+
+**Benefits:**
+- ✅ Auto-start on Raspberry Pi boot
+- ✅ Auto-restart if script crashes (every 10 seconds)
+- ✅ Centralized logging via journalctl
+- ✅ Runs as background daemon
+- ✅ Easy management with systemctl commands
 
 ### Accessing Services
 
